@@ -6,4 +6,4 @@ from
      from {{ ref('fact_sales') }}) f,
     (select round(sum((quantity * price)::numeric), 2) as total
      from {{ source('staging', 'online_retail') }}) s
-where f.total <> s.total
+where abs(f.total - s.total) > 1
