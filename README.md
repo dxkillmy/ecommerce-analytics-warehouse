@@ -82,7 +82,11 @@ docker-compose.yml   PostgreSQL and Metabase
 
 You need Docker, Python 3.9 or newer, and the two CSV files from the dataset.
 
-1. Put the CSV files in `data/archive/` (`online_retail_09_10.csv` and `online_retail_10_11.csv`).
+1. **Download the data first.** The CSV files are not in this repo because they are too big, so you have to add them yourself. Download the dataset (link at the top) and put the two files here:
+   - `data/archive/online_retail_09_10.csv`
+   - `data/archive/online_retail_10_11.csv`
+
+   Check with `ls data/archive`. You should see both files. If the folder is empty, the load step will stop with an error.
 
 2. Install the Python packages:
    ```bash
