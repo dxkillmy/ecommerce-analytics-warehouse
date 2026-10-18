@@ -1,10 +1,8 @@
 with bounds as (
-
     select
         min(invoice_date)::date as d_min,
         max(invoice_date)::date as d_max
     from {{ source('staging', 'online_retail') }}
-
 )
 
 select

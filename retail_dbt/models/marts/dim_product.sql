@@ -1,21 +1,16 @@
 with codes as (
-
     select distinct stock_code
     from {{ source('staging', 'online_retail') }}
-
 ),
 
 description_counts as (
-
     select stock_code, description, count(*) as n
     from {{ source('staging', 'online_retail') }}
     where description is not null
     group by stock_code, description
-
 ),
 
 ranked as (
-
     select
         stock_code,
         description,
@@ -24,7 +19,6 @@ ranked as (
             order by n desc, description
         ) as rn
     from description_counts
-
 )
 
 select
