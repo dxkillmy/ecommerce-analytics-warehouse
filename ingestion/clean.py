@@ -1,7 +1,9 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
+import os
 
-engine = create_engine("postgresql+psycopg2://retail:retail@localhost:5432/retail")
+PGHOST = os.getenv("PGHOST", "localhost")
+engine = create_engine(f"postgresql+psycopg2://retail:retail@{PGHOST}:5432/retail")
 
 # 1) อ่านข้อมูลดิบ
 df = pd.read_sql("SELECT * FROM raw.online_retail", engine)

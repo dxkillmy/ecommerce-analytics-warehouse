@@ -1,0 +1,6 @@
+.venv
+data
+.git
+logs
+retail_dbt/target
+retail_dbt/logs

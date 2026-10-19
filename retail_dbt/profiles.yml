@@ -3,7 +3,7 @@ retail_dbt:
   outputs:
     dev:
       type: postgres
-      host: localhost
+      host: "{{ env_var('PGHOST', 'localhost') }}"
       port: 5432
       user: retail
       password: retail
