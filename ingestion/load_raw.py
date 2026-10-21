@@ -14,6 +14,9 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
+with open("ingestion/create_raw.sql") as f:
+    cur.execute(f.read())
+    
 cur.execute("TRUNCATE raw.online_retail;")
 
 for path in CSV_FILES:

@@ -76,7 +76,18 @@ ingestion/           load_raw.py, clean.py, create_raw.sql
 retail_dbt/          dbt project (models, tests)
 metabase/queries/    SQL for the dashboard charts
 docker-compose.yml   PostgreSQL and Metabase
+airflow/             Airflow image and the DAG
 ```
+
+## Scheduling with Airflow
+
+An Airflow DAG called `retail_pipeline` runs the whole pipeline every day. It has four tasks that run in order: `load_raw`, `clean`, `dbt_run` and `dbt_test`. If a task fails, Airflow tries it again up to 2 times. If it still fails, the tasks after it do not run. So a failed data test stops the pipeline instead of passing bad data along.
+
+The pipeline code runs in its own Python environment inside the Airflow image, because Airflow and dbt need different package versions.
+
+![Airflow success](docs/images/airflow_success.png)
+![Airflow failed](docs/images/airflow_failed.png)
+
 
 ## How to run
 
