@@ -3,14 +3,14 @@
 A small data pipeline I built to practice data engineering. It takes about 1 million rows of online store sales, cleans them, organizes them into tables that are easy to analyze, and shows the results on a dashboard. Everything runs on my laptop with Docker.
 
 - Data: [Online Retail II](https://archive.ics.uci.edu/dataset/502/online+retail+ii), sales from a UK online gift shop (Dec 2009 to Dec 2011)
-- Tools: Python, pandas, PostgreSQL, dbt, Docker, Metabase
+- Tools: Python, pandas, PostgreSQL, dbt, Airflow, Docker, Metabase
 
-![Dashboard](docs/images/dashboard1.png)
-![Dashboard](docs/images/dashboard2.png)
+![Dashboard 1](docs/images/dashboard1.png)
+![Dashboard 2](docs/images/dashboard2.png)
 
 ## How it works
 
-The data goes through three steps. Each step saves its result in its own schema (a group of tables) in PostgreSQL.
+The data goes through four steps. Each step saves its result in its own schema (a group of tables) in PostgreSQL.
 
 ```
 CSV files -> raw -> staging -> analytics -> Metabase dashboard
@@ -64,9 +64,9 @@ There are four charts. The SQL for each one is in `metabase/queries/`.
 1. Monthly net sales: sales peak in November in both years.
 2. Top 10 countries: the United Kingdom is most of the revenue.
 3. Monthly return rate: the value of returned items as a percent of sales.
-4. New vs returning customers: from 2010, there are more returning customers than new ones in most months.
+4. New vs returning customers: from early 2010, there are more returning customers than new ones in most months.
 
-December 2011 is left out because the data stops on 9 December. In December 2009 every customer counts as new because the data starts there.
+In the three monthly charts, December 2011 is left out because the data stops on 9 December. In December 2009 every customer counts as new because the data starts there.
 
 ## Folders
 
@@ -75,13 +75,13 @@ data/archive/        CSV files (not in git)
 ingestion/           load_raw.py, clean.py, create_raw.sql
 retail_dbt/          dbt project (models, tests)
 metabase/queries/    SQL for the dashboard charts
-docker-compose.yml   PostgreSQL and Metabase
+docker-compose.yml   PostgreSQL, Airflow and Metabase
 airflow/             Airflow image and the DAG
 ```
 
 ## Scheduling with Airflow
 
-An Airflow DAG called `retail_pipeline` runs the whole pipeline every day. It has four tasks that run in order: `load_raw`, `clean`, `dbt_run` and `dbt_test`. If a task fails, Airflow tries it again up to 2 times. If it still fails, the tasks after it do not run. So a failed data test stops the pipeline instead of passing bad data along.
+An Airflow DAG called `retail_pipeline` runs the whole pipeline every day. It has four tasks that run in order: `load_raw`, `clean`, `dbt_run` and `dbt_test`. If a task fails, Airflow tries it again up to 2 times. If it still fails, the tasks after it do not run, and the failed task turns red so I can see the problem. If a data test fails, it also shows up as a red task instead of going unnoticed.
 
 The pipeline code runs in its own Python environment inside the Airflow image, because Airflow and dbt need different package versions.
 
@@ -91,7 +91,9 @@ The pipeline code runs in its own Python environment inside the Airflow image, b
 
 ## How to run
 
-You need Docker, Python 3.9 or newer, and the two CSV files from the dataset.
+You need Docker and the two CSV files from the dataset.
+
+### Option 1: with Airflow
 
 1. **Download the data first.** The CSV files are not in this repo because they are too big, so you have to add them yourself. Download the dataset (link at the top) and put the two files here:
    - `data/archive/online_retail_09_10.csv`
@@ -99,30 +101,29 @@ You need Docker, Python 3.9 or newer, and the two CSV files from the dataset.
 
    Check with `ls data/archive`. You should see both files. If the folder is empty, the load step will stop with an error.
 
-2. Install the Python packages:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+2. Start everything. The first build takes a few minutes:
+```bash
+   docker compose up -d --build
+```
 
-3. Start PostgreSQL and Metabase, and wait about 10 seconds:
-   ```bash
-   docker compose up -d
-   ```
+3. Wait 2 to 3 minutes, then open http://localhost:8080 and log in with `admin` / `admin`. Switch on `retail_pipeline` and press the play button to run it.
 
-4. Load and clean the data:
-   ```bash
-   docker exec -i retail_postgres psql -U retail -d retail < ingestion/create_raw.sql
-   python ingestion/load_raw.py
-   python ingestion/clean.py
-   ```
+4. When all four tasks are green, open Metabase at http://localhost:3000, create an account, and add a PostgreSQL database (host `postgres`, port `5432`, database `retail`, user `retail`, password `retail`). Then create the charts from the SQL files in `metabase/queries/`.
 
-5. Build the tables and run the tests:
-   ```bash
-   cd retail_dbt
-   dbt run
-   dbt test
-   ```
+### Option 2: without Airflow
 
-6. Open http://localhost:3000, create an account, and add a PostgreSQL database (host `postgres`, port `5432`, database `retail`, user `retail`, password `retail`). Then create the charts from the SQL files in `metabase/queries/`.
+You also need Python 3.9 or newer. Do step 1 above first, then:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+docker compose up -d postgres metabase
+python ingestion/load_raw.py
+python ingestion/clean.py
+cd retail_dbt
+dbt run
+dbt test
+```
+
+Then do step 4 above for Metabase.
