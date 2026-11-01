@@ -8,6 +8,8 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://retail:retail@postgres:5432/airflow
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__WEBSERVER__WORKERS: 2
+    AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT: 300    
     AIRFLOW__WEBSERVER__SECRET_KEY: dev-secret-key
   volumes:
     - ./airflow/dags:/opt/airflow/dags

@@ -17,6 +17,7 @@ with DAG(
     start_date=datetime(2026, 1, 1),
     schedule="@daily",
     catchup=False,
+    max_active_runs=1,
     default_args=default_args,
 ) as dag:
 
@@ -30,6 +31,11 @@ with DAG(
         bash_command=f"cd {PROJECT} && {PY} ingestion/clean.py",
     )
 
+    dbt_seed = BashOperator(
+        task_id="dbt_seed",
+        bash_command=f"cd {PROJECT}/retail_dbt && {DBT} seed",
+    )
+
     dbt_run = BashOperator(
         task_id="dbt_run",
         bash_command=f"cd {PROJECT}/retail_dbt && {DBT} run",
@@ -40,4 +46,4 @@ with DAG(
         bash_command=f"cd {PROJECT}/retail_dbt && {DBT} test",
     )
 
-    load_raw >> clean >> dbt_run >> dbt_test
+    load_raw >> clean >> dbt_seed >> dbt_run >> dbt_test

@@ -4,9 +4,11 @@ WITH monthly AS (
         make_date(d.year_num, d.month_num, 1) AS month
     FROM analytics.fact_sales f
     JOIN analytics.dim_date d USING (date_day)
+    JOIN analytics.dim_product p USING (stock_code)
     WHERE f.has_customer
       AND NOT f.is_return
       AND f.date_day < '2011-12-01'
+      AND p.is_product
 )
 SELECT
     m.month,

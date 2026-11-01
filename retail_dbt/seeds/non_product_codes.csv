@@ -1,0 +1,16 @@
+stock_code,category
+DOT,shipping
+POST,shipping
+C2,shipping
+AMAZONFEE,fee
+BANK CHARGES,fee
+CRUK,fee
+M,adjustment
+D,adjustment
+B,adjustment
+ADJUST,adjustment
+ADJUST2,adjustment
+S,adjustment
+PADS,adjustment
+TEST001,test
+TEST002,test

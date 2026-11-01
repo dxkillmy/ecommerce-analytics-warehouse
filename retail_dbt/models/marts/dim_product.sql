@@ -23,8 +23,15 @@ ranked as (
 
 select
     c.stock_code,
-    r.description
+    r.description,
+    np.stock_code is null
+        and c.stock_code not ilike 'gift\_%'  as is_product,
+    coalesce(np.category,
+        case when c.stock_code ilike 'gift\_%' then 'voucher' end,
+        'product')                           as product_category
 from codes c
 left join ranked r
     on r.stock_code = c.stock_code
    and r.rn = 1
+left join {{ ref('non_product_codes') }} np
+    on upper(c.stock_code) = upper(np.stock_code)
