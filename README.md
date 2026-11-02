@@ -37,6 +37,8 @@ I checked the raw data with SQL first, then decided what to do with each problem
 
 The numbers add up: 1,067,371 raw rows - 34,335 duplicates = 1,033,036 = 1,027,017 clean rows + 6,019 rejected rows.
 
+At first, writing the clean data to staging took about 11 minutes inside the Airflow container. pandas `to_sql` inserts rows in small batches, which is slow for 1 million rows. It was so slow that I thought the task was stuck. I changed it to use PostgreSQL `COPY` (the same way `load_raw.py` loads the CSV files), and now the whole `clean.py` step takes about 1.5 minutes.
+
 ## Rows that are not products
 
 Some stock codes are not real products. For example `POST` and `DOT` are postage, `AMAZONFEE` and `BANK CHARGES` are fees, and `M` and `ADJUST` are manual adjustments. At first I counted them as sales, which made the numbers wrong.

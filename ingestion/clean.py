@@ -1,7 +1,21 @@
 import os
+import csv
+from io import StringIO
 import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.types import Integer, Numeric
+
+def copy_insert(table, conn, keys, data_iter):
+    dbapi_conn = conn.connection
+    with dbapi_conn.cursor() as cur:
+        buf = StringIO()
+        csv.writer(buf).writerows(data_iter)
+        buf.seek(0)
+        cols = ", ".join(f'"{k}"' for k in keys)
+        cur.copy_expert(
+            f'COPY {table.schema}."{table.name}" ({cols}) FROM STDIN WITH CSV',
+            buf,
+        )
 
 PGHOST = os.getenv("PGHOST", "localhost")
 engine = create_engine(f"postgresql+psycopg2://retail:retail@{PGHOST}:5432/retail")
@@ -57,7 +71,7 @@ with engine.begin() as conn:
 clean.to_sql(
     "online_retail", engine, schema="staging",
     if_exists="replace", index=False, chunksize=50000,
-    dtype=col_types,
+    dtype=col_types, method=copy_insert,
 )
 rejected.to_sql(
     "rejected_rows", engine, schema="staging",
