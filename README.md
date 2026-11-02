@@ -75,7 +75,9 @@ dbt runs 14 tests, and all pass:
 
 - Every ID is unique and not empty.
 - Every sale points to a customer, product and date that exist.
-- The total sales amount in `fact_sales` matches the total in staging. This test failed the first time because of a rounding difference of 0.018 on 19 million, so I allowed a difference up to 1.
+- The total sales amount in `fact_sales` matches the total in staging exactly.
+
+At first this test failed by a small amount (0.018 on 19 million). The reason was that `price` was stored as a float, and floats can't store most decimal numbers exactly. When you add up 1 million of them, the tiny errors add up too. Even summing the same rows in a different order gave a different result in the 7th decimal place. I changed `price` to `numeric` and `quantity` to `integer` in staging, and stopped rounding each line in `fact_sales`. Now the two totals are exactly the same, with no tolerance.
 
 ## Dashboard
 

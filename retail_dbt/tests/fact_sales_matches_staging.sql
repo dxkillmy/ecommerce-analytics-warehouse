@@ -2,8 +2,8 @@ select
     f.total as fact_total,
     s.total as staging_total
 from
-    (select round(sum(line_amount), 2) as total
+    (select sum(line_amount) as total
      from {{ ref('fact_sales') }}) f,
-    (select round(sum((quantity * price)::numeric), 2) as total
+    (select sum(quantity * price) as total
      from {{ source('staging', 'online_retail') }}) s
-where abs(f.total - s.total) > -1
+where f.total <> s.total

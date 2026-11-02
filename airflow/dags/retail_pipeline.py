@@ -10,6 +10,7 @@ DBT = "/opt/airflow/pipeline-venv/bin/dbt"
 default_args = {
     "retries": 2,
     "retry_delay": timedelta(minutes=1),
+    "execution_timeout": timedelta(minutes=30),
 }
 
 with DAG(

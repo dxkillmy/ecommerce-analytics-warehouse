@@ -12,7 +12,7 @@ select
     country,
     quantity,
     price                           as unit_price,
-    round((quantity * price)::numeric, 2) as line_amount,
+    quantity * price                as line_amount,
     is_return,
     has_customer
 from {{ source('staging', 'online_retail') }}
