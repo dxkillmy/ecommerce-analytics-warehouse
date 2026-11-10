@@ -94,6 +94,13 @@ In the three monthly charts, December 2011 is left out because the data stops on
 
 All charts only count real products (`is_product = true`).
 
+## Limitations
+
+- The pipeline reloads everything every day. It is not incremental, so it would get slow if the data kept growing. (My US Stock project has incremental loading.)
+- `clean.py` reads the whole table into pandas at once. This is fine for 1 million rows, but with much more data it would run out of memory. Moving the cleaning into dbt or reading in chunks would fix this.
+- The list of non-product stock codes is made by hand. If a new code like that shows up, it will be counted as a product until I add it to the seed file.
+- The Metabase charts have to be created by hand from the SQL files. They are not saved in the repo.
+
 ## Folders
 
 ```
