@@ -54,7 +54,20 @@ I put these codes in a small CSV file (`retail_dbt/seeds/non_product_codes.csv`)
 | voucher | 78 | 1,687 |
 | test | 14 | 204 |
 
-The biggest change was the return rate. Amazon fees are stored as returns, so before this fix the monthly return rate was mostly 3-9%. After the fix it is mostly 1.5-6%.
+Amount is the net amount (sales minus returns) over the whole dataset.
+
+### Effect on the return rate
+
+The biggest change was the return rate. Here, return rate = returned value / sales value (by money, not by number of orders). December 2011 is left out because the data stops on 9 December.
+
+| | All codes | Products only |
+|---|---:|---:|
+| Whole period | 6.34% | 2.85% |
+| By month | mostly 3-9% | mostly 1.5-6% |
+
+Fees and manual adjustments are only 0.19% of the rows in `fact_sales`, but they make up 55.6% of all returned value. Most of it comes from two codes, `M` (manual) and `AMAZONFEE`. They are on cancelled invoices (starting with `C`), so they were counted as returns even though no product came back. The 55.6% only counts return rows (`is_return = true`), not the net amounts in the table above.
+
+I checked these numbers with the queries in `retail_dbt/analyses/check_returns.sql`.
 
 ## The tables
 
@@ -99,7 +112,7 @@ All charts only count real products (`is_product = true`).
 ```
 data/archive/        CSV files (not in git)
 ingestion/           load_raw.py, clean.py, create_raw.sql
-retail_dbt/          dbt project (models, seeds, tests)
+retail_dbt/          dbt project (models, seeds, tests, analyses)
 metabase/queries/    SQL for the dashboard charts
 docker-compose.yml   PostgreSQL, Airflow and Metabase
 airflow/             Airflow image and the DAG
